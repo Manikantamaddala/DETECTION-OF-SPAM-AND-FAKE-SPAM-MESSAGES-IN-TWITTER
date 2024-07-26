@@ -1,0 +1,775 @@
+import pandas as pd
+import numpy as np
+path = 'train.csv'
+data = pd.read_csv(path)
+data.head()
+                                               Tweet  following  followers  \
+0                     Good Morning Love  @LeeBrown_V        0.0        0.0   
+1           '@realDonaldTrump @USNavy RIP TO HEROES'    42096.0    61060.0   
+2  Haven't been following the news but I understa...        0.0        0.0   
+3  pic.twitter.com/dy9q4ftLhZ What to do with pap...        0.0        0.0   
+4  #DidYouKnow ► Mahatma Gandhi made a brief visi...    17800.0    35100.0   
+
+   actions  is_retweet                        location     Type Unnamed: 7  
+0      0.0         0.0               Pennsylvania, USA  Quality        NaN  
+1   5001.0         0.0       South Padre Island, Texas     Spam        NaN  
+2      NaN         0.0  Will never be broke ever again  Quality        NaN  
+3      0.0         0.0                           Mundo  Quality        NaN  
+4      NaN         0.0             Nottingham, England  Quality        NaN  
+data.shape
+(14899, 8)
+data.isnull().sum()
+Tweet             0
+following       158
+followers        17
+actions        3437
+is_retweet        1
+location       2011
+Type              0
+Unnamed: 7    14897
+dtype: int64
+data.drop('Unnamed: 7',axis = 1,inplace=True)
+data.head()
+                                               Tweet  following  followers  \
+0                     Good Morning Love  @LeeBrown_V        0.0        0.0   
+1           '@realDonaldTrump @USNavy RIP TO HEROES'    42096.0    61060.0   
+2  Haven't been following the news but I understa...        0.0        0.0   
+3  pic.twitter.com/dy9q4ftLhZ What to do with pap...        0.0        0.0   
+4  #DidYouKnow ► Mahatma Gandhi made a brief visi...    17800.0    35100.0   
+
+   actions  is_retweet                        location     Type  
+0      0.0         0.0               Pennsylvania, USA  Quality  
+1   5001.0         0.0       South Padre Island, Texas     Spam  
+2      NaN         0.0  Will never be broke ever again  Quality  
+3      0.0         0.0                           Mundo  Quality  
+4      NaN         0.0             Nottingham, England  Quality  
+data.isnull().sum()
+Tweet            0
+following      158
+followers       17
+actions       3437
+is_retweet       1
+location      2011
+Type             0
+dtype: int64
+data = data.dropna()
+data.head()
+                                               Tweet  following  followers  \
+0                     Good Morning Love  @LeeBrown_V        0.0        0.0   
+1           '@realDonaldTrump @USNavy RIP TO HEROES'    42096.0    61060.0   
+3  pic.twitter.com/dy9q4ftLhZ What to do with pap...        0.0        0.0   
+5  #amms Samantha Bee Tries to ATTACK Trump, Inst...       29.0        7.0   
+8  Banking on Brexit: is it time to Invest in the...      530.0      849.0   
+
+   actions  is_retweet                   location     Type  
+0      0.0         0.0          Pennsylvania, USA  Quality  
+1   5001.0         0.0  South Padre Island, Texas     Spam  
+3      0.0         0.0                      Mundo  Quality  
+5    389.0         0.0                    England     Spam  
+8   8288.0         1.0               Kuala Lumpur     Spam  
+data.isnull().sum()
+Tweet         0
+following     0
+followers     0
+actions       0
+is_retweet    0
+location      0
+Type          0
+dtype: int64
+data.shape
+(10304, 7)
+data['location'].value_counts()
+United States                 4154
+United Kingdom                  66
+New York, NY                    33
+Los Angeles, CA                 26
+Washington, DC                  25
+                              ... 
+IG: sarahwilkinsonn              1
+@peachaneuI                      1
+Third Coast                      1
+NYC/Orlando                      1
+National and International       1
+Name: location, Length: 2875, dtype: int64
+data.drop('location',axis = 1,inplace=True)
+data.head()
+                                               Tweet  following  followers  \
+0                     Good Morning Love  @LeeBrown_V        0.0        0.0   
+1           '@realDonaldTrump @USNavy RIP TO HEROES'    42096.0    61060.0   
+3  pic.twitter.com/dy9q4ftLhZ What to do with pap...        0.0        0.0   
+5  #amms Samantha Bee Tries to ATTACK Trump, Inst...       29.0        7.0   
+8  Banking on Brexit: is it time to Invest in the...      530.0      849.0   
+
+   actions  is_retweet     Type  
+0      0.0         0.0  Quality  
+1   5001.0         0.0     Spam  
+3      0.0         0.0  Quality  
+5    389.0         0.0     Spam  
+8   8288.0         1.0     Spam  
+data['Type'].value_counts()
+Spam            7440
+Quality         2863
+South Dakota       1
+Name: Type, dtype: int64
+data[data['Type'] == 'South Dakota']
+                                                   Tweet  following  \
+12843  TRAITOR California Republicans are Defying Tru...        0.0   
+
+       followers  actions  is_retweet          Type  
+12843        2.0    412.0         0.0  South Dakota  
+data = data.drop(12843,axis=0)
+data['Type'].value_counts()
+Spam       7440
+Quality    2863
+Name: Type, dtype: int64
+data.head()
+                                               Tweet  following  followers  \
+0                     Good Morning Love  @LeeBrown_V        0.0        0.0   
+1           '@realDonaldTrump @USNavy RIP TO HEROES'    42096.0    61060.0   
+3  pic.twitter.com/dy9q4ftLhZ What to do with pap...        0.0        0.0   
+5  #amms Samantha Bee Tries to ATTACK Trump, Inst...       29.0        7.0   
+8  Banking on Brexit: is it time to Invest in the...      530.0      849.0   
+
+   actions  is_retweet     Type  
+0      0.0         0.0  Quality  
+1   5001.0         0.0     Spam  
+3      0.0         0.0  Quality  
+5    389.0         0.0     Spam  
+8   8288.0         1.0     Spam  
+def type_con(df):
+    for i in df['Type']:
+        if i == 'Quality':
+            df['Type'][i]=df['Type'][i].replace(i,0)
+        else:
+            df['Type'][i]=df['Type'][i].replace(i,1)
+    return df
+data['Type'].replace(to_replace  = ['Quality','Spam'],value  = ['0','1'],inplace = True)
+data.head()
+                                               Tweet  following  followers  \
+0                     Good Morning Love  @LeeBrown_V        0.0        0.0   
+1           '@realDonaldTrump @USNavy RIP TO HEROES'    42096.0    61060.0   
+3  pic.twitter.com/dy9q4ftLhZ What to do with pap...        0.0        0.0   
+5  #amms Samantha Bee Tries to ATTACK Trump, Inst...       29.0        7.0   
+8  Banking on Brexit: is it time to Invest in the...      530.0      849.0   
+
+   actions  is_retweet Type  
+0      0.0         0.0    0  
+1   5001.0         0.0    1  
+3      0.0         0.0    0  
+5    389.0         0.0    1  
+8   8288.0         1.0    1  
+#data.replace(to_replace  = ['Quality','Spam'],value  = ['0','1'])
+#type_con(data)
+data.isnull().sum()
+Tweet         0
+following     0
+followers     0
+actions       0
+is_retweet    0
+Type          0
+dtype: int64
+data.head()
+                                               Tweet  following  followers  \
+0                     Good Morning Love  @LeeBrown_V        0.0        0.0   
+1           '@realDonaldTrump @USNavy RIP TO HEROES'    42096.0    61060.0   
+3  pic.twitter.com/dy9q4ftLhZ What to do with pap...        0.0        0.0   
+5  #amms Samantha Bee Tries to ATTACK Trump, Inst...       29.0        7.0   
+8  Banking on Brexit: is it time to Invest in the...      530.0      849.0   
+
+   actions  is_retweet Type  
+0      0.0         0.0    0  
+1   5001.0         0.0    1  
+3      0.0         0.0    0  
+5    389.0         0.0    1  
+8   8288.0         1.0    1  
+import re
+pattern = re.compile('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+
+def remove_html(text):
+    no_html= pattern.sub('',text)
+    return no_html
+# Remove all text that start with html
+data['Tweet']=data['Tweet'].apply(lambda x : remove_html(x))
+data.head()
+                                               Tweet  following  followers  \
+0                     Good Morning Love  @LeeBrown_V        0.0        0.0   
+1           '@realDonaldTrump @USNavy RIP TO HEROES'    42096.0    61060.0   
+3  pic.twitter.com/dy9q4ftLhZ What to do with pap...        0.0        0.0   
+5  #amms Samantha Bee Tries to ATTACK Trump, Inst...       29.0        7.0   
+8  Banking on Brexit: is it time to Invest in the...      530.0      849.0   
+
+   actions  is_retweet Type  
+0      0.0         0.0    0  
+1   5001.0         0.0    1  
+3      0.0         0.0    0  
+5    389.0         0.0    1  
+8   8288.0         1.0    1  
+import nltk  
+nltk.download('stopwords') 
+from nltk.corpus import stopwords 
+from nltk.stem.porter import PorterStemmer 
+[nltk_data] Downloading package stopwords to
+[nltk_data]     C:\Users\ss\AppData\Roaming\nltk_data...
+[nltk_data]   Package stopwords is already up-to-date!
+def clean_text(text):
+ 
+    text = re.sub('[^a-zA-Z]', ' ', text)  
+
+    text = text.lower()  
+
+    # split to array(default delimiter is " ") 
+    text = text.split()  
+    
+    text = [w for w in text if not w in set(stopwords.words('english'))] 
+
+    text = ' '.join(text)    
+            
+    return text
+text = data.Tweet[3]
+print(text)
+clean_text(text)
+pic.twitter.com/dy9q4ftLhZ What to do with paper scissors and glue  … #papercraft #diy
+'pic twitter com dy q ftlhz paper scissors glue papercraft diy'
+# Apply clean text 
+data['Tweet'] = data['Tweet'].apply(lambda x : clean_text(x))
+data.head()
+                                               Tweet  following  followers  \
+0                       good morning love leebrown v        0.0        0.0   
+1                  realdonaldtrump usnavy rip heroes    42096.0    61060.0   
+3  pic twitter com dy q ftlhz paper scissors glue...        0.0        0.0   
+5  amms samantha bee tries attack trump instead i...       29.0        7.0   
+8  banking brexit time invest uk colin ward colin...      530.0      849.0   
+
+   actions  is_retweet Type  
+0      0.0         0.0    0  
+1   5001.0         0.0    1  
+3      0.0         0.0    0  
+5    389.0         0.0    1  
+8   8288.0         1.0    1  
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+data2 = data.copy()
+data2.head()
+                                               Tweet  following  followers  \
+0                       good morning love leebrown v        0.0        0.0   
+1                  realdonaldtrump usnavy rip heroes    42096.0    61060.0   
+3  pic twitter com dy q ftlhz paper scissors glue...        0.0        0.0   
+5  amms samantha bee tries attack trump instead i...       29.0        7.0   
+8  banking brexit time invest uk colin ward colin...      530.0      849.0   
+
+   actions  is_retweet Type  
+0      0.0         0.0    0  
+1   5001.0         0.0    1  
+3      0.0         0.0    0  
+5    389.0         0.0    1  
+8   8288.0         1.0    1  
+tfidf_vec = TfidfVectorizer()
+tfidf_dense = tfidf_vec.fit_transform(data2['Tweet']).todense()
+new_cols = tfidf_vec.get_feature_names()
+df = data2[['Tweet','Type']]
+df.head()
+                                               Tweet Type
+0                       good morning love leebrown v    0
+1                  realdonaldtrump usnavy rip heroes    1
+3  pic twitter com dy q ftlhz paper scissors glue...    0
+5  amms samantha bee tries attack trump instead i...    1
+8  banking brexit time invest uk colin ward colin...    1
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.model_selection import train_test_split
+X = df.Tweet
+Y = df.Type
+
+# Split the data into train and test
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y)
+
+vectorizer = CountVectorizer()
+# Fit vectorizer to the training data, transform training data
+X_train_df = vectorizer.fit_transform(X_train)
+
+# Just transform the test data 
+X_test_df = vectorizer.transform(X_test)
+from sklearn.naive_bayes import MultinomialNB
+nb = MultinomialNB()
+nb.fit(X_train_df, Y_train)
+MultinomialNB()
+# Create a dict for the predictions of all the models we'll try
+prediction = dict()
+
+prediction["Multinomial"] = nb.predict(X_test_df)
+
+# Looks like this (an array of 0s, 1s)
+prediction['Multinomial']
+array(['1', '0', '1', ..., '1', '1', '1'], dtype='<U1')
+from sklearn.metrics import accuracy_score, classification_report
+# Score the predictions
+
+accuracy_score(Y_test, prediction['Multinomial'])
+0.8206521739130435
+print(classification_report(Y_test, prediction['Multinomial'], target_names = ['Ham', 'Spam']), sep='\n')
+              precision    recall  f1-score   support
+
+         Ham       0.80      0.50      0.62       738
+        Spam       0.83      0.95      0.88      1838
+
+    accuracy                           0.82      2576
+   macro avg       0.81      0.73      0.75      2576
+weighted avg       0.82      0.82      0.81      2576
+
+# Find texts in X_test that were actually spam (Y_test = 1), but predicted Ham (0)
+X_test[Y_test > prediction["Multinomial"]]
+12000    make friends meat homemade condiments sauce su...
+1340     pack phase pistol go allstartrek padmalakshmi ...
+4193                   hell advice would get hell like bat
+6728     new lh stamp shirt madina design available lau...
+6989     calling bloggers forum users fundraisers rappe...
+                               ...                        
+5310           close eyes almost feel like nothing changed
+4109     listening never love talibkweli pandoramusic p...
+1160      summer wasted time asshole falldepressionreasons
+8513     users love twitter problems twitter great fix ...
+2772     happy birthday muhammad fred burton af sci som...
+Name: Tweet, Length: 94, dtype: object
+import pandas as pd
+import numpy as np
+
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.linear_model import SGDClassifier, LogisticRegression
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import RandomizedSearchCV
+from sklearn.metrics import accuracy_score, classification_report
+
+from scipy.stats import randint
+logreg = LogisticRegression()
+logreg.fit(X_train_df, Y_train)
+LogisticRegression()
+# Generate predictions
+prediction["Logistic"] = logreg.predict(X_test_df)
+
+# Score predictions
+accuracy_score(Y_test, prediction['Logistic'])
+0.812888198757764
+# Generate another classification report
+print(classification_report(Y_test, prediction['Logistic'], target_names = ['Ham', 'Spam']), sep='\n')
+              precision    recall  f1-score   support
+
+         Ham       0.78      0.48      0.59       738
+        Spam       0.82      0.95      0.88      1838
+
+    accuracy                           0.81      2576
+   macro avg       0.80      0.71      0.74      2576
+weighted avg       0.81      0.81      0.80      2576
+
+svm = SVC()
+svm.fit(X_train_df, Y_train)
+SVC()
+# Generate predictions
+prediction["SVM"] = svm.predict(X_test_df)
+
+# Score predictions
+accuracy_score(Y_test, prediction['SVM'])
+0.8012422360248447
+print(classification_report(Y_test, prediction['SVM'], target_names = ['Ham', 'Spam']), sep='\n')
+              precision    recall  f1-score   support
+
+         Ham       0.90      0.34      0.50       738
+        Spam       0.79      0.99      0.88      1838
+
+    accuracy                           0.80      2576
+   macro avg       0.85      0.66      0.69      2576
+weighted avg       0.82      0.80      0.77      2576
+
+tree = DecisionTreeClassifier()
+tree.fit(X_train_df, Y_train)
+DecisionTreeClassifier()
+# Generate predictions
+prediction["Tree"] = tree.predict(X_test_df)
+
+# Score predictions
+accuracy_score(Y_test, prediction['Tree'])
+0.7666925465838509
+print(classification_report(Y_test, prediction['Tree'], target_names = ['Ham', 'Spam']), sep='\n')
+              precision    recall  f1-score   support
+
+         Ham       0.60      0.57      0.58       738
+        Spam       0.83      0.85      0.84      1838
+
+    accuracy                           0.77      2576
+   macro avg       0.71      0.71      0.71      2576
+weighted avg       0.76      0.77      0.76      2576
+
+from sklearn.model_selection import GridSearchCV
+
+# Set up a "grid" of values we'd like to test to find out which results in the best performance
+c_space = np.logspace(-5, 8, 15)
+param_grid = {'C': c_space}
+
+# Perform a grid search for the logistic regression classifier, then re-fit the data
+logreg_cv = GridSearchCV(logreg, param_grid, cv = 5)
+logreg_cv.fit(X_train_df, Y_train)
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+C:\ProgramData\Anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py:762: ConvergenceWarning: lbfgs failed to converge (status=1):
+STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
+
+Increase the number of iterations (max_iter) or scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+GridSearchCV(cv=5, estimator=LogisticRegression(),
+             param_grid={'C': array([1.00000000e-05, 8.48342898e-05, 7.19685673e-04, 6.10540230e-03,
+       5.17947468e-02, 4.39397056e-01, 3.72759372e+00, 3.16227766e+01,
+       2.68269580e+02, 2.27584593e+03, 1.93069773e+04, 1.63789371e+05,
+       1.38949549e+06, 1.17876863e+07, 1.00000000e+08])})
+print("Tuned Logistic Regression Parameters: {}".format(logreg_cv.best_params_)) 
+print("Best score is {}".format(logreg_cv.best_score_))
+Tuned Logistic Regression Parameters: {'C': 0.4393970560760795}
+Best score is 0.8016058143575444
+# Decision trees take a lot of parameters, making them an ideal use case for RandomizedSearchCV
+
+param_dist = {"max_depth": [3, None],
+              "max_features": randint(1, 9),
+              "min_samples_leaf": randint(1, 9),
+              "criterion": ["gini", "entropy"]}
+
+tree_cv = RandomizedSearchCV(tree, param_dist, cv=5)
+tree_cv.fit(X_train_df, Y_train)
+RandomizedSearchCV(cv=5, estimator=DecisionTreeClassifier(),
+                   param_distributions={'criterion': ['gini', 'entropy'],
+                                        'max_depth': [3, None],
+                                        'max_features': <scipy.stats._distn_infrastructure.rv_frozen object at 0x0000020AB5D5ADF0>,
+                                        'min_samples_leaf': <scipy.stats._distn_infrastructure.rv_frozen object at 0x0000020AB3F5F4C0>})
+print("Tuned Tree Parameters: {}".format(tree_cv.best_params_)) 
+print("Best score is {}".format(tree_cv.best_score_))
+Tuned Tree Parameters: {'criterion': 'gini', 'max_depth': None, 'max_features': 4, 'min_samples_leaf': 2}
+Best score is 0.7249902661425038
+# Reusing the same param_grid we used for the logistic regression, since both classifiers take a C value
+svm_cv = GridSearchCV(svm, param_grid, cv = 5)
+svm_cv.fit(X_train_df, Y_train)
+
+print("Tuned SVM Parameters: {}".format(svm_cv.best_params_)) 
+print("Best score is {}".format(svm_cv.best_score_))
+Tuned SVM Parameters: {'C': 3.727593720314938}
+Best score is 0.8040632679804235
+alpha_values = np.arange(0.1, 4, 0.1)
+alpha_grid = {'alpha': alpha_values}
+
+nb_cv = GridSearchCV(nb, alpha_grid, cv = 5)
+nb_cv.fit(X_train_df, Y_train)
+
+print("Tuned NB Parameters: {}".format(nb_cv.best_params_)) 
+print("Best score is {}".format(nb_cv.best_score_))
+Tuned NB Parameters: {'alpha': 2.8000000000000003}
+Best score is 0.8039346554633106
